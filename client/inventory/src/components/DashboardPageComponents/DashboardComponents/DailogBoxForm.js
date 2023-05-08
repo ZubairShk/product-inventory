@@ -87,6 +87,7 @@ function DailogBoxForm(props) {
     dispatch(resetState());
     onCloseForm(null);
     setData([]);
+    setFileUrl("");
     dispatch(resetState());
     dispatch(getProductDetails());
     //   dispatch(clearImageUrl());
@@ -134,37 +135,39 @@ function DailogBoxForm(props) {
   };
 
   useEffect(() => {
-    const uploadFile = async () => {
-      try {
-        let requestData = new FormData();
-        requestData.append("product", data);
-        const res = await UploadApi(requestData);
-        if (res.success) {
-          setFileUrl(res.path_url);
-          setAlert(true);
-          setIsSuccess(true);
-          setMsg("uploaded successfully");
-          const timer = setTimeout(() => {
-            setAlert(false);
-            setIsSuccess(false);
-          }, 3000);
-          return () => clearTimeout(timer);
-        }
-      } catch (error) {
-        setAlert(true);
-        setMsg("upload failed");
-        setIsSuccess(false);
-        const timer = setTimeout(() => {
-          setAlert(false);
-          setMsg("");
-        }, 3000);
-        return () => clearTimeout(timer);
-      }
-    };
-    if (data.name) {
+    if (data.name && data?.size) {
+      console.log(data);
       uploadFile();
     }
   }, [data]);
+
+  const uploadFile = async () => {
+    try {
+      let requestData = new FormData();
+      requestData.append("product", data);
+      const res = await UploadApi(requestData);
+      if (res.success) {
+        setFileUrl(res.path_url);
+        setAlert(true);
+        setIsSuccess(true);
+        setMsg("uploaded successfully");
+        const timer = setTimeout(() => {
+          setAlert(false);
+          setIsSuccess(false);
+        }, 3000);
+        return () => clearTimeout(timer);
+      }
+    } catch (error) {
+      setAlert(true);
+      setMsg("upload failed");
+      setIsSuccess(false);
+      const timer = setTimeout(() => {
+        setAlert(false);
+        setMsg("");
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  };
 
   const onSubmit = (values, { setSubmitting }) => {
     setSubmitting(false);
@@ -174,7 +177,10 @@ function DailogBoxForm(props) {
       grossPrice: values.grossPrice,
       netPrice: values.netPrice,
       qty: values.qty,
-      photo: filrUrl || "",
+      photo: {
+        url: filrUrl || "",
+        file: data?.name || "",
+      },
       id: editing && values.id,
     };
     if (editing) {
@@ -194,6 +200,13 @@ function DailogBoxForm(props) {
       return () => clearTimeout(timer);
     }
   }, [isPostSuccess, isPostfailure]);
+
+  useEffect(() => {
+    if (editing) {
+      setFileUrl(selectedValue.photo.url);
+      setData({ name: selectedValue.photo.file });
+    }
+  }, [editing, selectedValue]);
 
   return (
     <Dialog
@@ -235,7 +248,7 @@ function DailogBoxForm(props) {
               >
                 <Box textAlign="center">
                   <Typography variant="h5" className={classes.title}>
-                    Add New Product
+                    {editing ? "Edit Product" : "Add New Product"}
                   </Typography>
                 </Box>
                 <Box width="60%">

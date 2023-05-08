@@ -127,8 +127,10 @@ function DashboardComponent() {
   const fullScreen = useMediaQuery(theme.breakpoints.down("md"));
   const dispatch = useDispatch();
   const [editing, setEditing] = useState(false);
+  const [imgUrl, setImgUrl] = useState("");
 
-  const handleClickOpen = () => {
+  const handleClickOpen = (url) => {
+    setImgUrl(url);
     setOpen(true);
   };
   const handleClickOpen1 = () => {
@@ -137,6 +139,7 @@ function DashboardComponent() {
 
   const handleClose = () => {
     setOpen(false);
+    setImgUrl("");
   };
 
   const handleClose1 = () => {
@@ -349,21 +352,11 @@ function DashboardComponent() {
                           variant="text"
                           size="small"
                           color="primary"
-                          onClick={handleClickOpen}
+                          onClick={() => handleClickOpen(row.photo.url)}
                           className={classes.imgBtn}
                         >
                           show photo
                         </Button>
-                        <div>
-                          <Dialog
-                            fullScreen={fullScreen}
-                            open={open}
-                            onClose={handleClose}
-                            aria-labelledby="responsive-dialog-title"
-                          >
-                            <img src={row.photo} alt="profile" />
-                          </Dialog>
-                        </div>
                       </>
                     ) : (
                       <Typography variant={"subtitle1"} color="secondary">
@@ -420,6 +413,15 @@ function DashboardComponent() {
           </Table>
         </TableContainer>
       </Box>
+      <Dialog
+        fullScreen={fullScreen}
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="responsive-dialog-title"
+      >
+        {/* <h1>{row.photo}</h1> */}
+        <img src={imgUrl} alt="" />
+      </Dialog>
       <Dialog
         fullScreen={fullScreen}
         open={open1}

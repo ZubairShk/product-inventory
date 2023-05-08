@@ -23,7 +23,12 @@ const product = new Schema({
     require: true,
   },
   photo: {
-    type: String,
+    url: {
+      type: String,
+    },
+    file: {
+      type: String,
+    },
   },
 });
 const Product = mongoose.model("product", product);
