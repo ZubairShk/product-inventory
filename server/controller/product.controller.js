@@ -30,7 +30,11 @@ exports.addProduct = (req, res) => {
       message: `invalid request body`,
     });
   }
-  const query = { name, vat, grossPrice, netPrice, qty, photo };
+  let pic = {
+    url: photo?.url,
+    file: photo?.file,
+  };
+  const query = { name, vat, grossPrice, netPrice, qty, photo: pic };
   const product = new Product(query);
   product
     .save()
@@ -53,7 +57,11 @@ exports.editProduct = async (req, res) => {
       message: `invalid request body`,
     });
   }
-  const query = { name, vat, grossPrice, netPrice, qty, photo };
+  let pic = {
+    url: photo?.url,
+    file: photo?.file,
+  };
+  const query = { name, vat, grossPrice, netPrice, qty, photo: pic };
   try {
     const product = await Product.findByIdAndUpdate(id, query);
     if (product) {
