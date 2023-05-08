@@ -7,9 +7,11 @@ import * as yup from "yup";
 import AlertBox from "../../atoms/AlertBox";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import FormControl from "../../molecules/FormControl/FormControl";
-import { vatList } from "../../../utils/commons";
+import { vatList, imageValidation } from "../../../utils/commons";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
+import WarningIcon from "@mui/icons-material/Warning";
+import Alert from "@mui/material/Alert";
 import {
   addProduct,
   productSelector,
@@ -63,6 +65,10 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: "bold",
     color: "#800080",
   },
+  alert: {
+    // width: "80px",
+    margin: 10,
+  },
 }));
 
 function DailogBoxForm(props) {
@@ -74,6 +80,10 @@ function DailogBoxForm(props) {
   const [alert, setAlert] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [msg, setMsg] = useState("");
+  const [imgValidation, setImgValidation] = useState({
+    invalid: false,
+    msg: "",
+  });
   const dispatch = useDispatch();
   const {
     isPostSuccess,
@@ -137,11 +147,19 @@ function DailogBoxForm(props) {
   useEffect(() => {
     if (data.name && data?.size) {
       console.log(data);
-      uploadFile();
+      if (imageValidation(data.name)) {
+        uploadFile();
+      } else {
+        setImgValidation({
+          invalid: true,
+          msg: "please upload jpg or png image format",
+        });
+      }
     }
   }, [data]);
 
   const uploadFile = async () => {
+    setImgValidation({ invalid: false, msg: "" });
     try {
       let requestData = new FormData();
       requestData.append("product", data);
@@ -170,23 +188,32 @@ function DailogBoxForm(props) {
   };
 
   const onSubmit = (values, { setSubmitting }) => {
-    setSubmitting(false);
-    const reqBody = {
-      name: values.name,
-      vat: values.vat,
-      grossPrice: values.grossPrice,
-      netPrice: values.netPrice,
-      qty: values.qty,
-      photo: {
-        url: filrUrl || "",
-        file: data?.name || "",
-      },
-      id: editing && values.id,
-    };
-    if (editing) {
-      dispatch(editProduct(reqBody));
+    if (filrUrl && data?.name && !imgValidation.invalid) {
+      setSubmitting(false);
+      const reqBody = {
+        name: values.name,
+        vat: values.vat,
+        grossPrice: values.grossPrice,
+        netPrice: values.netPrice,
+        qty: values.qty,
+        photo: {
+          url: filrUrl,
+          file: data?.name,
+        },
+        id: editing && values.id,
+      };
+      if (editing) {
+        dispatch(editProduct(reqBody));
+      } else {
+        dispatch(addProduct(reqBody));
+      }
     } else {
-      dispatch(addProduct(reqBody));
+      if (!imgValidation.invalid) {
+        setImgValidation({
+          invalid: true,
+          msg: "Plese upload the product image",
+        });
+      }
     }
   };
 
@@ -334,10 +361,10 @@ function DailogBoxForm(props) {
                   className={classes.dragNdDropText}
                   textAlign="center"
                   marginY={2}
-                  padding={1}
+                  padding={2}
                 >
                   <input
-                    accept="image/jpeg,image/png,application/pdf,image/x-eps"
+                    accept="image/jpeg,image/png"
                     className={classes.input}
                     id="fileData"
                     type="file"
@@ -379,7 +406,18 @@ function DailogBoxForm(props) {
                     </Box>
                   )}
                 </Box>
-                <Box width="60%" margint={2}>
+                {imgValidation.invalid && (
+                  <Box width="60%">
+                    <Alert
+                      variant="outlined"
+                      severity="error"
+                      className={classes.alert}
+                    >
+                      {imgValidation.msg}
+                    </Alert>
+                  </Box>
+                )}
+                <Box width="60%" marginTop={1}>
                   <Button
                     variant="contained"
                     color="primary"

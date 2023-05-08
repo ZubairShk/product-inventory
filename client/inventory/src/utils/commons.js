@@ -14,3 +14,11 @@ export const vatList = [
     label: "25 %",
   },
 ];
+
+export const imageValidation = (fileName) => {
+  if (fileName.match(/\.(jpg|png)$/)) {
+    return true;
+  } else {
+    return false;
+  }
+};
